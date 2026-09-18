@@ -3,8 +3,7 @@ import bcrypt from "bcryptjs";
 import { getSession } from "../session";
 import { getLoginAuth, setPassword } from "../db/users";
 import { record } from "../db/authlog";
-
-export const MIN_LENGTH = 12;
+import { PASSWORD_MIN_LENGTH } from "../constants";
 
 export async function POST(req: Request) {
   const session = await getSession();
@@ -13,9 +12,13 @@ export async function POST(req: Request) {
   const { current, next } = (await req.json().catch(() => ({}))) as {
     current?: string; next?: string;
   };
-  if (!next || next.length < MIN_LENGTH) {
+  // Checked here as well as in the form, because the form is a convenience and
+  // this is the control.
+  if (!next || next.length < PASSWORD_MIN_LENGTH) {
     return NextResponse.json(
-      { error: `Use ${MIN_LENGTH} characters or more.` }, { status: 400 });
+      { error: `That is ${next?.length ?? 0} characters. Use ${PASSWORD_MIN_LENGTH} or more, and nothing has been changed.` },
+      { status: 400 },
+    );
   }
 
   // Re-check the current password rather than trusting the session: a borrowed
