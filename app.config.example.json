@@ -23,6 +23,8 @@
     ]
   },
 
+  "passwordReset": { "enabled": false },
+
   "seedAdmins": [
     { "name": "___Your Name___", "username": "___you@helloencore.com___" }
   ]

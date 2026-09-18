@@ -4,6 +4,7 @@ import { getSession } from "../session";
 import { getLoginAuth, setPassword } from "../db/users";
 import { record } from "../db/authlog";
 import { PASSWORD_MIN_LENGTH } from "../constants";
+import { invalidateAll } from "../db/resets";
 
 export async function POST(req: Request) {
   const session = await getSession();
@@ -39,6 +40,9 @@ export async function POST(req: Request) {
   }
 
   await setPassword(session.uid, await bcrypt.hash(next, 12));
+  // Any outstanding reset link is dead now. Somebody who asked for one and then
+  // remembered their password should not leave a live key in an inbox.
+  await invalidateAll(session.uid);
   await record({ event: "password.changed", username: session.username, headers: req.headers });
   return NextResponse.json({ ok: true });
 }

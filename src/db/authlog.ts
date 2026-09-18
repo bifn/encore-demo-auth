@@ -8,10 +8,13 @@
 // Nothing here stores a password, a hash, or any part of either.
 import { sql } from "./client";
 import { cfg } from "../config";
+import { CREATE_SQL } from "./resets";
 
 export type AuthEvent =
   | "login.ok" | "login.bad_password" | "login.unknown_user" | "login.inactive"
   | "logout" | "password.changed" | "password.reset_by_admin"
+  | "password.reset_requested" | "password.reset_throttled"
+  | "password.reset_used" | "password.reset_rejected"
   | "user.created" | "user.activated" | "user.deactivated" | "user.edited";
 
 export interface AuthLogRow {
@@ -95,4 +98,5 @@ export async function ensureTables(): Promise<void> {
            ON ${c.authLogTable} (at DESC)`);
   await q(`CREATE INDEX IF NOT EXISTS ${c.tablePrefix}_auth_log_username
            ON ${c.authLogTable} (username, at DESC)`);
+  for (const stmt of CREATE_SQL(c.tablePrefix)) await q(stmt);
 }

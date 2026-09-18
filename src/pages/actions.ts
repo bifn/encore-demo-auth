@@ -10,6 +10,7 @@ import {
   createUser, getUserById, setActive, setPassword, updateUser, usernameExists,
 } from "../db/users";
 import { record } from "../db/authlog";
+import { invalidateAll } from "../db/resets";
 
 /* Every action re-checks the permission on the server. The proxy already keeps
  * non-admins off these pages, but a server action is a callable endpoint: the
@@ -90,6 +91,7 @@ export async function resetPassword(form: FormData): Promise<{ password?: string
     const id = String(form.get("id") ?? "");
     const password = randomUUID().replace(/-/g, "").slice(0, 14);
     await setPassword(id, await bcrypt.hash(password, 12));
+    await invalidateAll(id);
     await record({
       event: "password.reset_by_admin",
       username: (await getUserById(id))?.username ?? null,
