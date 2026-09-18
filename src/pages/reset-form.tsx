@@ -31,7 +31,7 @@ export default function ResetForm() {
     const body = (await res.json().catch(() => ({}))) as { error?: string };
     setMsg(
       res.ok
-        ? { ok: true, text: "Done. Sign in with the new one." }
+        ? { ok: true, text: "Your new password is set." }
         : { ok: false, text: body.error ?? "That did not work, and nothing has been changed." },
     );
     if (res.ok) setNext("");
@@ -39,7 +39,12 @@ export default function ResetForm() {
   }
 
   if (!token) {
-    return <div className="err">That link is missing its token. Ask for another.</div>;
+    return (
+      <div className="err">
+        This link is missing the part that identifies it, so it cannot be used.{" "}
+        <a href="/forgot">Ask for a new one</a>.
+      </div>
+    );
   }
 
   return (
@@ -65,7 +70,7 @@ export default function ResetForm() {
       </label>
       {msg ? <div className={msg.ok ? "ok" : "err"}>{msg.text}</div> : null}
       {msg?.ok ? (
-        <p style={{ marginTop: 14 }}><a href="/login">Go and sign in</a></p>
+        <p style={{ marginTop: 14 }}><a href="/login">Sign in with it</a></p>
       ) : (
         <button className="primary" type="submit" disabled={busy}>
           {busy ? "Saving" : "Set the password"}

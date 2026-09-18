@@ -56,7 +56,7 @@ export async function POST(req: Request) {
     name: found.user.name,
     resetUrl,
     brand: c.name,
-    expiresIn: `${TOKEN_TTL_MINUTES} minutes`,
+    expiresIn: TOKEN_TTL_MINUTES === 60 ? "an hour" : `${TOKEN_TTL_MINUTES} minutes`,
   });
 
   await record({ event: "password.reset_requested", username: address, headers: req.headers });

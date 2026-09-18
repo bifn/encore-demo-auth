@@ -29,38 +29,44 @@ export interface ResetEmailInput {
   resetUrl: string;
   /** What this app is called, for the subject and the body. */
   brand: string;
-  /** How long the link lasts, in words. */
+  /** How long the link lasts, in words: "an hour", not "60 minutes". */
   expiresIn: string;
+}
+
+function firstName(full: string): string {
+  return full.trim().split(/\s+/)[0] || full;
 }
 
 function renderHtml({ name, resetUrl, brand, expiresIn }: ResetEmailInput): string {
   return `<!doctype html>
 <html>
-  <body style="font-family: ui-sans-serif, system-ui, sans-serif; line-height:1.6; color:#3f3f3f; max-width:520px; margin:0 auto; padding:24px;">
-    <div style="text-transform:uppercase; letter-spacing:0.14em; font-size:11px; color:#8c8c8c; font-weight:700;">${brand}</div>
-    <p style="margin-top:16px;">Hi ${name},</p>
-    <p>Somebody asked to reset the password on your ${brand} account. If that was you, set a new one here:</p>
-    <p style="margin:28px 0;">
-      <a href="${resetUrl}" style="display:inline-block; background:#1a1a1a; color:#fff; text-decoration:none; padding:12px 20px; border-radius:4px; font-weight:600;">Set a new password</a>
-    </p>
-    <p style="color:#8c8c8c; font-size:13px;">The link is single use and expires in ${expiresIn}. <strong>Your current password still works</strong> until you use it.</p>
-    <p style="color:#8c8c8c; font-size:13px;">If this was not you, ignore this message and nothing changes. Somebody knowing your email address is not enough to get in.</p>
+  <body style="margin:0; padding:0; background:#f4f4f4;">
+    <div style="font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; line-height:1.6; color:#3f3f3f; max-width:520px; margin:0 auto; padding:32px 24px; background:#ffffff;">
+      <div style="text-transform:uppercase; letter-spacing:0.14em; font-size:11px; color:#8c8c8c; font-weight:700;">${brand}</div>
+      <div style="height:3px; margin:14px 0 22px; background:linear-gradient(90deg,#f58020,#ed2024);"></div>
+      <p style="margin:0 0 16px;">Hi ${firstName(name)},</p>
+      <p style="margin:0 0 20px;">Here is your link to set a new password. It works once, and it lasts ${expiresIn}.</p>
+      <p style="margin:0 0 24px;">
+        <a href="${resetUrl}" style="display:inline-block; background:#1a1a1a; color:#ffffff; text-decoration:none; padding:13px 22px; border-radius:4px; font-weight:600; font-size:15px;">Set a new password</a>
+      </p>
+      <p style="margin:0 0 16px; color:#3f3f3f;">Your current password keeps working until you use this, so nothing has changed yet.</p>
+      <p style="margin:0; color:#8c8c8c; font-size:13px;">If you did not ask for this, you can ignore it. Your email address on its own is not enough to get anybody in.</p>
+    </div>
   </body>
 </html>`;
 }
 
 function renderText({ name, resetUrl, brand, expiresIn }: ResetEmailInput): string {
   return [
-    `Hi ${name},`,
+    `Hi ${firstName(name)},`,
     "",
-    `Somebody asked to reset the password on your ${brand} account.`,
-    "If that was you, set a new one here:",
+    `Here is your link to set a new password for ${brand}. It works once, and it lasts ${expiresIn}.`,
     "",
     resetUrl,
     "",
-    `The link is single use and expires in ${expiresIn}. Your current password still works until you use it.`,
+    "Your current password keeps working until you use this, so nothing has changed yet.",
     "",
-    "If this was not you, ignore this message and nothing changes.",
+    "If you did not ask for this, you can ignore it. Your email address on its own is not enough to get anybody in.",
   ].join("\n");
 }
 
@@ -86,7 +92,7 @@ export async function sendPasswordResetEmail(input: ResetEmailInput): Promise<De
       body: JSON.stringify({
         personalizations: [{ to: [{ email: input.to, name: input.name }] }],
         from: { email: from, name: process.env.EMAIL_FROM_NAME || input.brand },
-        subject: `Reset your ${input.brand} password`,
+        subject: `Set a new password for ${input.brand}`,
         content: [
           { type: "text/plain", value: renderText(input) },
           { type: "text/html", value: renderHtml(input) },
