@@ -1,10 +1,10 @@
-import { listUsers } from "../db/users.ts";
-import { getSession } from "../session.ts";
-import { failuresSince, recent } from "../db/authlog.ts";
-import { cfg } from "../config.ts";
-import { can, roles } from "../permissions.ts";
-import UserAdmin from "./user-admin.tsx";
-import AuthLog from "./auth-log.tsx";
+import { listUsers } from "../db/users";
+import { getSession } from "../session";
+import { failuresSince, recent } from "../db/authlog";
+import { cfg } from "../config";
+import { can, roles } from "../permissions";
+import UserAdmin from "./user-admin";
+import AuthLog from "./auth-log";
 
 export default async function UsersPage() {
   const session = await getSession();

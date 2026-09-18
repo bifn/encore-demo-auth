@@ -6,8 +6,8 @@
 // those succeeded, is the difference between answering that and shrugging.
 //
 // Nothing here stores a password, a hash, or any part of either.
-import { sql } from "./client.ts";
-import { cfg } from "../config.ts";
+import { sql } from "./client";
+import { cfg } from "../config";
 
 export type AuthEvent =
   | "login.ok" | "login.bad_password" | "login.unknown_user" | "login.inactive"

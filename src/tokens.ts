@@ -3,7 +3,7 @@
  * in the proxy runtime, route handlers and Server Components.
  *
  * Must not import next/headers: the proxy bundle imports this file. */
-import { cfg } from "./config.ts";
+import { cfg } from "./config";
 
 export interface SessionPayload {
   uid: string;

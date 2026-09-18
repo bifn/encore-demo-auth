@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { sessionCookie } from "../tokens.ts";
-import { getSession } from "../session.ts";
-import { record } from "../db/authlog.ts";
+import { sessionCookie } from "../tokens";
+import { getSession } from "../session";
+import { record } from "../db/authlog";
 
 export async function POST(req: Request) {
   const session = await getSession();

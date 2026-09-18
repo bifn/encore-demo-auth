@@ -1,11 +1,14 @@
 {
   "name": "@encore/demo-auth",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "The gate we put in front of client demos: sessions, roles, scoped access, a users console, and an auth log.",
   "license": "UNLICENSED",
   "private": true,
   "type": "module",
-  "files": ["src", "README.md"],
+  "files": [
+    "src",
+    "README.md"
+  ],
   "exports": {
     ".": "./src/index.ts",
     "./proxy": "./src/proxy.ts",

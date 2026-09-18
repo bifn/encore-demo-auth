@@ -3,13 +3,13 @@
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
-import { getSession } from "../session.ts";
-import { can, roles } from "../permissions.ts";
-import { cfg, isScoped } from "../config.ts";
+import { getSession } from "../session";
+import { can, roles } from "../permissions";
+import { cfg, isScoped } from "../config";
 import {
   createUser, getUserById, setActive, setPassword, updateUser, usernameExists,
-} from "../db/users.ts";
-import { record } from "../db/authlog.ts";
+} from "../db/users";
+import { record } from "../db/authlog";
 
 /* Every action re-checks the permission on the server. The proxy already keeps
  * non-admins off these pages, but a server action is a callable endpoint: the

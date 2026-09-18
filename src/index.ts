@@ -11,25 +11,25 @@
  * Every entry point that uses this package imports that module, which is what
  * puts the config in each of Next's separate bundles. See the README.
  * ------------------------------------------------------------------------- */
-export { setConfig as createAuth, cfg, isScoped, scopeLabel } from "./config.ts";
-export type { AppConfig, Scope } from "./config.ts";
+export { setConfig as createAuth, cfg, isScoped, scopeLabel } from "./config";
+export type { AppConfig, Scope } from "./config";
 
-export { can, roles, scopeKeyFor } from "./permissions.ts";
-export type { Permission } from "./permissions.ts";
+export { can, roles, scopeKeyFor } from "./permissions";
+export type { Permission } from "./permissions";
 
-export { getSession } from "./session.ts";
-export { createToken, verifyToken, sessionCookie, sessionTtlSeconds } from "./tokens.ts";
-export type { SessionPayload } from "./tokens.ts";
+export { getSession } from "./session";
+export { createToken, verifyToken, sessionCookie, sessionTtlSeconds } from "./tokens";
+export type { SessionPayload } from "./tokens";
 
-export { authenticate } from "./accounts.ts";
-export type { AuthOutcome } from "./accounts.ts";
+export { authenticate } from "./accounts";
+export type { AuthOutcome } from "./accounts";
 
-export { record, recent, failuresSince, ensureTables } from "./db/authlog.ts";
-export type { AuthEvent, AuthLogRow } from "./db/authlog.ts";
+export { record, recent, failuresSince, ensureTables } from "./db/authlog";
+export type { AuthEvent, AuthLogRow } from "./db/authlog";
 
 export {
   listUsers, getUserById, createUser, setActive, setPassword, updateUser,
-} from "./db/users.ts";
-export type { DbUser } from "./db/users.ts";
+} from "./db/users";
+export type { DbUser } from "./db/users";
 
-export { proxy, proxyMatcher } from "./proxy.ts";
+export { proxy, proxyMatcher } from "./proxy";

@@ -2,7 +2,7 @@
  * so it must not reach the proxy bundle: the proxy reads the cookie off the
  * request and calls verifyToken directly. */
 import { cookies } from "next/headers";
-import { sessionCookie, verifyToken, type SessionPayload } from "./tokens.ts";
+import { sessionCookie, verifyToken, type SessionPayload } from "./tokens";
 
 export async function getSession(): Promise<SessionPayload | null> {
   const store = await cookies();

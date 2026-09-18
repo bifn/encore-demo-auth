@@ -49,7 +49,13 @@ Then re-export what you need. Each of these is a file of one or two lines:
 ```ts
 // src/proxy.ts
 import "@/auth";
-export { proxy as default, proxyMatcher as config } from "@encore/demo-auth/proxy";
+export { proxy as default } from "@encore/demo-auth/proxy";
+
+// Written out, not re-exported: Next parses this object at compile time and
+// will not follow it into a package.
+export const config = {
+  matcher: ["/((?!login|api/auth|_next/static|_next/image|favicon.ico).*)"],
+};
 
 // src/app/api/auth/login/route.ts
 import "@/auth";

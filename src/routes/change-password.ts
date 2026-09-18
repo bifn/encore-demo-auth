@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { getSession } from "../session.ts";
-import { getLoginAuth, setPassword } from "../db/users.ts";
-import { record } from "../db/authlog.ts";
+import { getSession } from "../session";
+import { getLoginAuth, setPassword } from "../db/users";
+import { record } from "../db/authlog";
 
 export const MIN_LENGTH = 12;
 

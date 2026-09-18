@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { authenticate } from "../accounts.ts";
-import { createToken, sessionCookie, sessionTtlSeconds } from "../tokens.ts";
-import { record } from "../db/authlog.ts";
+import { authenticate } from "../accounts";
+import { createToken, sessionCookie, sessionTtlSeconds } from "../tokens";
+import { record } from "../db/authlog";
 
 export async function POST(req: Request) {
   const { username, password } = (await req.json().catch(() => ({}))) as {

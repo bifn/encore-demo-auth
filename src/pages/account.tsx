@@ -1,5 +1,5 @@
-import { getSession } from "../session.ts";
-import ChangePassword from "./change-password-form.tsx";
+import { getSession } from "../session";
+import ChangePassword from "./change-password-form";
 
 export default async function AccountPage() {
   const session = await getSession();

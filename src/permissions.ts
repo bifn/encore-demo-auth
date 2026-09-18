@@ -5,7 +5,7 @@
  * are two different axes. An executive reads every scope and still cannot
  * create a login. Conflate them and every read-wide role becomes an admin role.
  */
-import { cfg, isScoped } from "./config.ts";
+import { cfg, isScoped } from "./config";
 
 export type Permission = "app.access" | "scope.all" | "users.manage" | (string & {});
 

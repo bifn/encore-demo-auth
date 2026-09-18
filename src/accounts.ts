@@ -1,8 +1,8 @@
 /* Credential check. Server-only; bcryptjs is pure JS so it runs in the Node
  * route-handler runtime. Only the login route calls this. */
 import bcrypt from "bcryptjs";
-import { getLoginAuth, touchLastSeen } from "./db/users.ts";
-import type { SessionPayload } from "./tokens.ts";
+import { getLoginAuth, touchLastSeen } from "./db/users";
+import type { SessionPayload } from "./tokens";
 
 /* The caller gets one answer to show the person and a different, more specific
  * one to write down. The screen must not distinguish an unknown address from a

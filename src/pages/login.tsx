@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import { cfg } from "../config.ts";
-import LoginForm from "./login-form.tsx";
+import { cfg } from "../config";
+import LoginForm from "./login-form";
 
 export default function LoginPage() {
   const c = cfg();

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { addUser, editUser, resetPassword, toggleActive } from "./actions.ts";
+import { addUser, editUser, resetPassword, toggleActive } from "./actions";
 
 interface User {
   id: string;

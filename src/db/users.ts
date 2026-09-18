@@ -3,8 +3,8 @@
 // Queries go through sql.query with positional parameters because the table name
 // comes from config and an identifier cannot be bound. The name is validated in
 // config.ts at import; every value here is still a parameter, never interpolated.
-import { sql } from "./client.ts";
-import { cfg } from "../config.ts";
+import { sql } from "./client";
+import { cfg } from "../config";
 
 export interface DbUser {
   id: string;

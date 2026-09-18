@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { sessionCookie, verifyToken } from "./tokens.ts";
-import { can, scopeKeyFor } from "./permissions.ts";
-import { cfg, isScoped } from "./config.ts";
+import { sessionCookie, verifyToken } from "./tokens";
+import { can, scopeKeyFor } from "./permissions";
+import { cfg, isScoped } from "./config";
 
 /* ----------------------------------------------------------------------------
  * The gate. Everything is closed except the login page and the auth API.

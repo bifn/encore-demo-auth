@@ -1,4 +1,4 @@
-import type { AuthLogRow } from "../db/authlog.ts";
+import type { AuthLogRow } from "../db/authlog";
 
 /* What the log is for: when somebody says a password stopped working, or a
  * person who should not have reached a territory did, this is the record that
