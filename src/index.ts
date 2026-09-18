@@ -35,3 +35,8 @@ export type { DbUser } from "./db/users";
 export { proxy, proxyMatcher } from "./proxy";
 
 export { PASSWORD_MIN_LENGTH } from "./constants";
+
+export { sendPasswordResetEmail, renderResetHtml, renderResetText } from "./email";
+export type { DeliveryResult, DeliveryStatus, ResetEmailInput } from "./email";
+
+export { issueToken, findUsable, consume, invalidateAll, TOKEN_TTL_MINUTES } from "./db/resets";

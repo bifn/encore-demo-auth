@@ -31,6 +31,10 @@ export interface AppConfig {
   roles: Record<string, string[]>;
   /** The slice a sign-in may open. Empty means the app is not scoped at all. */
   scopes: { label: string; assetPath: string; list: Scope[] };
+  /** Self-serve password reset by email. Off unless the app has a sender that
+   *  actually delivers: a reset flow whose mail lands in spam is worse than
+   *  none, because people wait for it instead of asking somebody. */
+  passwordReset?: { enabled: boolean };
 }
 
 let current: (AppConfig & { usersTable: string; authLogTable: string }) | null = null;

@@ -116,6 +116,41 @@ a short password with a native bubble and no message on the page, so somebody
 changes their password, is told nothing, and discovers days later that the old
 one still works. A rule nobody can see is not a rule, it is a trap.
 
+## Password reset by email
+
+Off by default. Turn it on with `"passwordReset": { "enabled": true }` and two
+environment variables, `SENDGRID_API_KEY` and `EMAIL_FROM`, plus the two routes
+and two pages:
+
+    src/app/api/auth/forgot/route.ts   export { POST } from "@encore/demo-auth/routes/forgot";
+    src/app/api/auth/reset/route.ts    export { POST } from "@encore/demo-auth/routes/reset";
+    src/app/forgot/page.tsx            export { default } from "@encore/demo-auth/pages/forgot";
+    src/app/reset/page.tsx             export { default } from "@encore/demo-auth/pages/reset";
+
+Both pages must be reachable without a session, so add `forgot` and `reset` to
+the proxy matcher's exclusion list alongside `login`.
+
+**Leave it off unless mail actually arrives.** A reset flow whose mail lands in
+spam is worse than not having one: people wait for a message instead of asking
+somebody. That means a sending domain with SPF and DKIM set up, not a sandbox.
+
+What it does, and why each piece is there:
+
+- The token is 256 bits of randomness, **stored as a SHA-256 hash**. The table
+  would otherwise be a list of live keys to every account.
+- One hour, single use, and using it kills every other outstanding link for that
+  person. So does changing the password by any other route.
+- The answer to the forgot form **never varies**: same words whether the address
+  exists, the account is switched off, or the rate limit bit. Three requests an
+  hour per account, and the fourth gets the same reply as the first.
+- Expired, already used, and never existed give **one message**. Telling them
+  apart tells somebody holding a stolen link which kind of stolen it is.
+- The link comes back in the response **only when mail is unconfigured, and
+  never in production**. That is why delivery reports a status rather than a
+  boolean: a configured send that fails at runtime must not hand a live token to
+  whoever submitted an unauthenticated form.
+- Nothing logs the token or the link, on any path.
+
 ## Versioning
 
 Tagged releases. Pin to a tag and move deliberately:

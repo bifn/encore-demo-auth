@@ -17,6 +17,11 @@ export default function LoginPage() {
         <Suspense fallback={null}>
           <LoginForm />
         </Suspense>
+        {c.passwordReset?.enabled ? (
+          <p style={{ margin: "14px 0 0" }}>
+            <a className="muted" href="/forgot">Forgotten your password?</a>
+          </p>
+        ) : null}
       </div>
       {c.note ? (
         <p className="muted" style={{ marginTop: 18 }}>{c.note}</p>

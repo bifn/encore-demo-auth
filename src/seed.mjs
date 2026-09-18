@@ -41,6 +41,15 @@ await sql.query(`CREATE INDEX IF NOT EXISTS ${config.tablePrefix}_auth_log_at ON
 await sql.query(
   `CREATE INDEX IF NOT EXISTS ${config.tablePrefix}_auth_log_username ON ${LOG} (username, at DESC)`);
 
+await sql.query(`CREATE TABLE IF NOT EXISTS ${config.tablePrefix}_password_resets (
+  id bigserial PRIMARY KEY, user_id text NOT NULL, token_hash text NOT NULL,
+  expires_at timestamptz NOT NULL, used_at timestamptz, requested_ip text,
+  created_at timestamptz NOT NULL DEFAULT now())`);
+await sql.query(`CREATE INDEX IF NOT EXISTS ${config.tablePrefix}_password_resets_hash
+  ON ${config.tablePrefix}_password_resets (token_hash)`);
+await sql.query(`CREATE INDEX IF NOT EXISTS ${config.tablePrefix}_password_resets_user
+  ON ${config.tablePrefix}_password_resets (user_id, created_at DESC)`);
+
 const admins = (config.seedAdmins ?? []).filter(
   (a) => a.username && !a.username.includes("___"));
 if (!admins.length) {
