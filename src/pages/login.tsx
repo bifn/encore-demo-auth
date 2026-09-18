@@ -19,7 +19,7 @@ export default function LoginPage() {
         </Suspense>
         {c.passwordReset?.enabled ? (
           <p style={{ margin: "14px 0 0" }}>
-            <a className="muted" href="/forgot">Forgotten your password?</a>
+            <a className="muted" href="/forgot">Forgot your password?</a>
           </p>
         ) : null}
       </div>

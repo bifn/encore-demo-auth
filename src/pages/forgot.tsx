@@ -9,10 +9,10 @@ export default function ForgotPage() {
       <h1 style={{ marginTop: 6 }}>{c.name}</h1>
       <hr className="rule" />
       <div className="card">
-        <h2>Forgotten password</h2>
+        <h2>Forgot your password</h2>
         <p className="muted" style={{ margin: "2px 0 0" }}>
-          Give us the address you sign in with and we will send a link. Your current password
-          keeps working until you use it.
+          Tell us the address you sign in with and we will email you a link. Your current
+          password keeps working until you use it.
         </p>
         <ForgotForm />
       </div>

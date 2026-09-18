@@ -29,7 +29,12 @@ export default function ForgotForm() {
   if (sent) {
     return (
       <>
-        <div className="ok" style={{ marginTop: 16 }}>{sent}</div>
+        <div className="ok" style={{ marginTop: 16 }}>
+          {sent}
+          <br />
+          The link works once and lasts an hour. If it is not there in a minute or two, check
+          your spam folder before asking for another.
+        </div>
         {devUrl ? (
           <div className="err" style={{ marginTop: 12 }}>
             Mail is not configured here, so the link is below rather than in an inbox. This

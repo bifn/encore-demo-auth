@@ -28,7 +28,7 @@ export async function POST(req: Request) {
   if (!row) {
     await record({ event: "password.reset_rejected", headers: req.headers });
     return NextResponse.json(
-      { error: "That link has expired or has already been used. Ask for another." },
+      { error: "That link has expired or has already been used. Ask for a new one from the sign-in page." },
       { status: 400 },
     );
   }
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
   if (!user || !user.active) {
     await record({ event: "password.reset_rejected", username: user?.username, headers: req.headers });
     return NextResponse.json(
-      { error: "That link has expired or has already been used. Ask for another." },
+      { error: "That link has expired or has already been used. Ask for a new one from the sign-in page." },
       { status: 400 },
     );
   }
