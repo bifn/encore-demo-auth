@@ -1,0 +1,32 @@
+{
+  "name": "@encore/demo-auth",
+  "version": "0.1.0",
+  "description": "The gate we put in front of client demos: sessions, roles, scoped access, a users console, and an auth log.",
+  "license": "UNLICENSED",
+  "private": true,
+  "type": "module",
+  "files": ["src", "README.md"],
+  "exports": {
+    ".": "./src/index.ts",
+    "./proxy": "./src/proxy.ts",
+    "./routes/*": "./src/routes/*.ts",
+    "./pages/*": "./src/pages/*.tsx",
+    "./styles.css": "./src/styles.css",
+    "./seed": "./src/seed.mjs"
+  },
+  "peerDependencies": {
+    "@neondatabase/serverless": ">=1",
+    "bcryptjs": ">=3",
+    "next": ">=15",
+    "react": ">=19"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "typescript": "^5"
+  }
+}

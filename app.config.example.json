@@ -1,0 +1,29 @@
+{
+  "name": "Client Demo",
+  "org": "Encore Talent Solutions",
+  "description": "Prototype console. Built on your own numbers.",
+  "note": "This door exists only because the prototype lives outside your tenant. In the system we propose to build, who signs in and what each person sees is your own identity platform. There is no password of ours in it.",
+
+  "tablePrefix": "demo",
+  "cookieName": "demo_session",
+  "sessionHours": 12,
+
+  "roles": {
+    "Administrator": ["app.access", "scope.all", "users.manage"],
+    "Executive": ["app.access", "scope.all"],
+    "Manager": ["app.access"]
+  },
+
+  "scopes": {
+    "label": "Territory",
+    "assetPath": "/demo",
+    "list": [
+      { "key": "north", "label": "North" },
+      { "key": "south", "label": "South" }
+    ]
+  },
+
+  "seedAdmins": [
+    { "name": "___Your Name___", "username": "___you@helloencore.com___" }
+  ]
+}
