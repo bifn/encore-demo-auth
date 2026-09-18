@@ -28,6 +28,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "That current password is wrong." }, { status: 403 });
   }
 
+  // The form refuses this too, and the form is a convenience rather than a
+  // control. Answering ok to a request that changed nothing is the same lie
+  // this route was rewritten to stop telling.
+  if (await bcrypt.compare(next, found.passwordHash)) {
+    return NextResponse.json(
+      { error: "That is the password you already have, and nothing has been changed." },
+      { status: 400 },
+    );
+  }
+
   await setPassword(session.uid, await bcrypt.hash(next, 12));
   await record({ event: "password.changed", username: session.username, headers: req.headers });
   return NextResponse.json({ ok: true });
