@@ -105,6 +105,17 @@ Generating them is the app's job, because the transform depends on what the
 asset is. The rule worth keeping: **build the narrow file so the thing it must
 not reach is absent from the markup**, not hidden with CSS. Hidden is a suggestion.
 
+## Passwords
+
+The minimum length is `PASSWORD_MIN_LENGTH`, exported so the form and the route
+read the same number. It is checked in the form, where the answer can be shown,
+and again in the route, which is where it is enforced.
+
+It is deliberately not a `minLength` attribute on the input. The browser blocks
+a short password with a native bubble and no message on the page, so somebody
+changes their password, is told nothing, and discovers days later that the old
+one still works. A rule nobody can see is not a rule, it is a trap.
+
 ## Versioning
 
 Tagged releases. Pin to a tag and move deliberately:

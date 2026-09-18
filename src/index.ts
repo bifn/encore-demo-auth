@@ -33,3 +33,5 @@ export {
 export type { DbUser } from "./db/users";
 
 export { proxy, proxyMatcher } from "./proxy";
+
+export { PASSWORD_MIN_LENGTH } from "./constants";
