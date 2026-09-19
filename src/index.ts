@@ -24,7 +24,7 @@ export type { SessionPayload } from "./tokens";
 export { authenticate } from "./accounts";
 export type { AuthOutcome } from "./accounts";
 
-export { record, recent, failuresSince, ensureTables } from "./db/authlog";
+export { record, recent, verifyChain, ensureTables } from "./db/authlog";
 export type { AuthEvent, AuthLogRow } from "./db/authlog";
 
 export {
