@@ -37,7 +37,12 @@ function validate(role: string, scope: string) {
   // A narrow role owns exactly one slice; the wide roles see all of them, and
   // storing a slice against those would be a lie in the row.
   if (can(role, "scope.all")) {
-    if (scope !== "all") throw new Error("That role sees everything.");
+    if (scope !== "all") {
+      throw new Error(
+        `${role} sees every ${cfg().scopes.label.toLowerCase()}, so there is no single one ` +
+        "to pick. Choose a narrower role, or leave it and they will see all of them.",
+      );
+    }
   } else if (!keys.includes(scope)) {
     throw new Error(`Pick the ${cfg().scopes.label.toLowerCase()} this person owns.`);
   }

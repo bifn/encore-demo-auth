@@ -38,7 +38,18 @@ export default function UserAdmin({
 }) {
   const ROLE_OPTIONS = roleOptions;
   const narrow = (r: string) => scopes.length > 0 && !wideRoles.includes(r);
-  const [role, setRole] = useState(roleOptions[roleOptions.length - 1] ?? "");
+  const defaultRole = roleOptions[roleOptions.length - 1] ?? "";
+  const [role, setRole] = useState(defaultRole);
+  /* Bumped after a successful create so the form remounts.
+   *
+   * Without it the second person added in one sitting fails. A server action
+   * resets the form's DOM on success, so the role select falls back to its
+   * first option, which is the widest role, while this component still believes
+   * it holds the narrowest and goes on showing the scope picker. The two then
+   * disagree, the submit carries a wide role and a single scope, and the server
+   * refuses the combination. Nobody meets that until they add a second person,
+   * which is to say in front of an audience. */
+  const [formKey, setFormKey] = useState(0);
   const [handout, setHandout] = useState<{ who: string; password: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
@@ -53,13 +64,20 @@ export default function UserAdmin({
       <div className="card" style={{ marginBottom: 22 }}>
         <h2>Add somebody</h2>
         <form
+          key={formKey}
           action={async (fd) => {
             setError(null);
             setHandout(null);
             const res = await addUser(fd);
-            if (res.error) setError(res.error);
-            else if (res.password)
+            if (res.error) {
+              setError(res.error);
+              return;
+            }
+            if (res.password) {
               setHandout({ who: String(fd.get("name") ?? ""), password: res.password });
+            }
+            setRole(defaultRole);
+            setFormKey((k) => k + 1);
           }}
         >
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
