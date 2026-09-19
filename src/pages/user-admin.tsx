@@ -51,6 +51,10 @@ export default function UserAdmin({
    * which is to say in front of an audience. */
   const [formKey, setFormKey] = useState(0);
   const [handout, setHandout] = useState<{ who: string; password: string } | null>(null);
+  /* A password produced by a button in row forty has to appear in row forty.
+     It used to render in the card at the top, off screen, which is a poor way
+     to show somebody a value they get once. */
+  const [rowHandout, setRowHandout] = useState<{ id: string; password: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
 
@@ -132,6 +136,7 @@ export default function UserAdmin({
         ) : null}
       </div>
 
+      <div className="table-wrap">
       <table>
         <thead>
           <tr>
@@ -179,7 +184,19 @@ export default function UserAdmin({
                   </form>
                 ) : null}
               </td>
-              <td className="muted">{u.username}</td>
+              <td className="muted">
+                {u.username}
+                {rowHandout?.id === u.id ? (
+                  <div className="ok" style={{ marginTop: 6 }}>
+                    New password:{" "}
+                    <code style={{ fontSize: 15, background: "#fff", padding: "2px 6px",
+                                   border: "1px solid var(--line)" }}>
+                      {rowHandout.password}
+                    </code>
+                    . Shown once, so hand it over now.
+                  </div>
+                ) : null}
+              </td>
               <td>{u.role}</td>
               <td>{sliceFor(u)}</td>
               <td className="muted">
@@ -193,7 +210,7 @@ export default function UserAdmin({
                 <form
                   action={async (fd) => {
                     const res = await resetPassword(fd);
-                    if (res.password) setHandout({ who: u.name, password: res.password });
+                    if (res.password) setRowHandout({ id: u.id, password: res.password });
                   }}
                   style={{ display: "inline" }}
                 >
@@ -219,6 +236,7 @@ export default function UserAdmin({
           ))}
         </tbody>
       </table>
+      </div>
     </>
   );
 }
