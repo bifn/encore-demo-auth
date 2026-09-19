@@ -59,10 +59,31 @@ export function setConfig(config: AppConfig) {
   return current;
 }
 
+/* The env var is the fallback, and it is the reason this no longer depends on
+ * import order.
+ *
+ * A server action defined inside this package compiles into its own server
+ * bundle. The consuming app imports its auth module from its pages, but an
+ * action invoked on an instance where no page module has initialised never sees
+ * that import, so the singleton was unset and this threw. It worked in testing
+ * only because the instance happened to be warm from a page render first, which
+ * is the worst way for a bug to hide.
+ *
+ * DEMO_AUTH_CONFIG is inlined at build time by the app's next.config, so it is
+ * present in every bundle and every runtime, edge included, with no filesystem
+ * and no import to remember. */
 export function cfg() {
   if (!current) {
+    const inlined = process.env.DEMO_AUTH_CONFIG;
+    if (inlined) {
+      try {
+        return setConfig(JSON.parse(inlined) as AppConfig);
+      } catch (err) {
+        throw new Error(`demo-auth: DEMO_AUTH_CONFIG is set but unreadable: ${err}`);
+      }
+    }
     throw new Error(
-      "demo-auth: createAuth() has not run in this bundle. Import your app's auth module (the one that calls createAuth) from every entry point that uses this package.",
+      "demo-auth: no configuration in this bundle. Either call createAuth() from a module this entry point imports, or inline the config as DEMO_AUTH_CONFIG in next.config, which is what the README recommends because it does not depend on import order.",
     );
   }
   return current;

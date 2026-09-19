@@ -1,6 +1,6 @@
 {
   "name": "@encore/demo-auth",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "The gate we put in front of client demos: sessions, roles, scoped access, a users console, and an auth log.",
   "license": "UNLICENSED",
   "private": true,
