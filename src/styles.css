@@ -43,10 +43,25 @@ button.link { background: none; border: 0; color: var(--ink); cursor: pointer;
 .ok { margin-top: 14px; padding: 9px 12px; border-left: 3px solid #1f7a34;
   background: #f2f9f4; color: #1f5c2c; font-size: 13px; }
 .muted { color: var(--mid); font-size: 13px; }
-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-th { text-align: left; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
-  color: #fff; background: #2b2b2b; padding: 8px 10px; font-weight: 600; }
-td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.muted.small, .small { font-size: 12px; }
+/* Sized for a room, not for the author's laptop. A screen shared over a call
+   and re-encoded lands well below the pixel density it was written on, so the
+   secondary type is floored at 12px and the rows are tighter rather than
+   taller: everything gets larger while more of it fits. */
+table { width: 100%; border-collapse: collapse; font-size: 15px; }
+th {
+  text-align: left; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: #fff; background: #2b2b2b; padding: 9px 12px; font-weight: 600;
+  /* The header has to survive a long table. border-collapse drops a sticky
+     cell's border, so the rule is drawn as an inset shadow instead. */
+  position: sticky; top: 0; z-index: 2;
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.18);
+}
+td { padding: 7px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+
+/* Every table gets one of these. Without it a table wider than its container
+   pushes the document sideways and takes the centered layout with it. */
+.table-wrap { overflow-x: auto; }
 tr:last-child td { border-bottom: 0; }
 .badge { display: inline-block; font-size: 11px; padding: 2px 7px; border-radius: 3px;
   background: var(--soft); border: 1px solid var(--line); color: var(--body); }

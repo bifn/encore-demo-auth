@@ -67,6 +67,7 @@ export default function AuthLog({
       {rows.length === 0 ? (
         <p className="muted">Nothing recorded yet.</p>
       ) : (
+        <div className="table-wrap">
         <table>
           <thead>
             <tr>
@@ -94,6 +95,7 @@ export default function AuthLog({
             ))}
           </tbody>
         </table>
+        </div>
       )}
     </section>
   );
