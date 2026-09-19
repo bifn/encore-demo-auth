@@ -67,10 +67,26 @@ import "@/auth";
 export { default } from "@encore/demo-auth/pages/login";
 ```
 
-**Import `@/auth` from every entry point that uses the package.** Next bundles
-route handlers, Server Components and the proxy separately, and the config is a
-module singleton in each of those bundles. The package throws a named error
-rather than misbehaving if you miss one.
+**Inline the config, so import order cannot bite you.** In `next.config.ts`:
+
+```ts
+import config from "./app.config.json";
+const nextConfig = {
+  transpilePackages: ["@encore/demo-auth"],
+  env: { DEMO_AUTH_CONFIG: JSON.stringify(config) },
+};
+```
+
+The config is then present in every bundle and every runtime, edge included.
+
+This matters because a server action defined inside this package compiles into
+its own server bundle. Your app imports `@/auth` from its pages, but an action
+invoked on an instance where no page module has initialised never sees that
+import. The singleton is unset, and the failure only appears on a cold instance,
+which means it hides during testing and surfaces in front of somebody.
+
+`createAuth()` still works and still wins where it runs. The env var is the
+floor under it.
 
 ## The config
 
