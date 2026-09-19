@@ -26,7 +26,6 @@ export default function UserAdmin({
   roleOptions,
   wideRoles,
   selfId,
-  failures,
 }: {
   users: User[];
   scopes: ScopeOption[];
@@ -36,8 +35,6 @@ export default function UserAdmin({
   /** Roles that see every slice, so the picker hides for them. */
   wideRoles: string[];
   selfId: string;
-  /** Failed sign-in attempts per address in the last day, from the auth log. */
-  failures: Record<string, number>;
 }) {
   const ROLE_OPTIONS = roleOptions;
   const narrow = (r: string) => scopes.length > 0 && !wideRoles.includes(r);
@@ -135,11 +132,6 @@ export default function UserAdmin({
                 {u.name}
                 {u.id === selfId ? <span className="badge" style={{ marginLeft: 6 }}>You</span> : null}
                 {!u.active ? <span className="badge off" style={{ marginLeft: 6 }}>Switched off</span> : null}
-                {failures[u.username] ? (
-                  <span className="badge off" style={{ marginLeft: 6 }}>
-                    {failures[u.username]} failed {failures[u.username] === 1 ? "try" : "tries"} today
-                  </span>
-                ) : null}
                 {editing === u.id ? (
                   <form
                     action={async (fd) => {

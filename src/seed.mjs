@@ -41,6 +41,41 @@ await sql.query(`CREATE INDEX IF NOT EXISTS ${config.tablePrefix}_auth_log_at ON
 await sql.query(
   `CREATE INDEX IF NOT EXISTS ${config.tablePrefix}_auth_log_username ON ${LOG} (username, at DESC)`);
 
+// The audit log is append only and hash chained. Both are enforced in the
+// database rather than by the application, because an application that is
+// merely not writing is not the same thing as a log that cannot be rewritten.
+await sql.query(`CREATE EXTENSION IF NOT EXISTS pgcrypto`);
+await sql.query(`ALTER TABLE ${LOG} ADD COLUMN IF NOT EXISTS prev_hash text`);
+await sql.query(`ALTER TABLE ${LOG} ADD COLUMN IF NOT EXISTS row_hash text`);
+await sql.query(`CREATE OR REPLACE FUNCTION ${config.tablePrefix}_auth_log_chain()
+  RETURNS trigger AS $fn$
+  DECLARE last_hash text;
+  BEGIN
+    PERFORM pg_advisory_xact_lock(hashtext('${LOG}'));
+    SELECT row_hash INTO last_hash FROM ${LOG} WHERE row_hash IS NOT NULL ORDER BY id DESC LIMIT 1;
+    NEW.prev_hash := last_hash;
+    NEW.row_hash := encode(digest(
+      coalesce(last_hash,'') || '|' || coalesce(NEW.at::text,'') || '|' || NEW.event || '|' ||
+      coalesce(NEW.username,'') || '|' || coalesce(NEW.actor,'') || '|' ||
+      coalesce(NEW.ip,'') || '|' || coalesce(NEW.user_agent,''), 'sha256'), 'hex');
+    RETURN NEW;
+  END $fn$ LANGUAGE plpgsql`);
+await sql.query(`CREATE OR REPLACE FUNCTION ${config.tablePrefix}_auth_log_readonly()
+  RETURNS trigger AS $fn$
+  BEGIN RAISE EXCEPTION 'the auth log is append only: % is not allowed', TG_OP; END
+  $fn$ LANGUAGE plpgsql`);
+await sql.query(`DROP TRIGGER IF EXISTS ${config.tablePrefix}_auth_log_chain_t ON ${LOG}`);
+await sql.query(`CREATE TRIGGER ${config.tablePrefix}_auth_log_chain_t BEFORE INSERT ON ${LOG}
+  FOR EACH ROW EXECUTE FUNCTION ${config.tablePrefix}_auth_log_chain()`);
+await sql.query(`DROP TRIGGER IF EXISTS ${config.tablePrefix}_auth_log_readonly_t ON ${LOG}`);
+await sql.query(`CREATE TRIGGER ${config.tablePrefix}_auth_log_readonly_t
+  BEFORE UPDATE OR DELETE ON ${LOG}
+  FOR EACH ROW EXECUTE FUNCTION ${config.tablePrefix}_auth_log_readonly()`);
+await sql.query(`DROP TRIGGER IF EXISTS ${config.tablePrefix}_auth_log_notruncate_t ON ${LOG}`);
+await sql.query(`CREATE TRIGGER ${config.tablePrefix}_auth_log_notruncate_t
+  BEFORE TRUNCATE ON ${LOG}
+  FOR EACH STATEMENT EXECUTE FUNCTION ${config.tablePrefix}_auth_log_readonly()`);
+
 await sql.query(`CREATE TABLE IF NOT EXISTS ${config.tablePrefix}_password_resets (
   id bigserial PRIMARY KEY, user_id text NOT NULL, token_hash text NOT NULL,
   expires_at timestamptz NOT NULL, used_at timestamptz, requested_ip text,

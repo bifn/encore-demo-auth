@@ -6,6 +6,7 @@
 // those succeeded, is the difference between answering that and shrugging.
 //
 // Nothing here stores a password, a hash, or any part of either.
+import { createHash } from "node:crypto";
 import { sql } from "./client";
 import { cfg } from "../config";
 import { CREATE_SQL } from "./resets";
@@ -67,23 +68,53 @@ export async function recent(limit = 100): Promise<AuthLogRow[]> {
   }));
 }
 
-/** Failed attempts per address since a moment, for the roster's warning. */
-export async function failuresSince(hours = 24): Promise<Record<string, number>> {
-  const rows = await q<{ username: string; n: number }>(
-    `SELECT username, count(*)::int AS n
-       FROM ${cfg().authLogTable}
-      WHERE event LIKE 'login.%' AND event <> 'login.ok'
-        AND at > now() - make_interval(hours => $1)
-        AND username IS NOT NULL
-      GROUP BY username`,
-    [hours],
+/** Walks the hash chain and reports whether it is intact.
+ *
+ * Each row carries the hash of the row before it, so a deleted or altered row
+ * breaks every hash after it. This cannot prevent tampering by somebody with
+ * the database itself, and it is not meant to: it makes tampering visible,
+ * which is what an audit log has to do to be worth having. */
+export async function verifyChain(): Promise<{
+  ok: boolean;
+  entries: number;
+  brokenAt: number | null;
+  unchained: number;
+}> {
+  const rows = await q<{
+    id: number; prev_hash: string | null; row_hash: string | null; payload: string;
+  }>(
+    `SELECT id, prev_hash, row_hash,
+            coalesce(at::text,'') || '|' || event || '|' || coalesce(username,'') || '|' ||
+            coalesce(actor,'') || '|' || coalesce(ip,'') || '|' || coalesce(user_agent,'') AS payload
+       FROM ${cfg().authLogTable} ORDER BY id ASC`,
   );
-  return Object.fromEntries(rows.map((r) => [r.username, r.n]));
+
+  let prev: string | null = null;
+  let unchained = 0;
+  let expected: string;
+  for (const r of rows) {
+    // Rows written before the chain existed carry no hash. They are counted and
+    // named rather than quietly treated as verified.
+    if (r.row_hash === null) {
+      unchained += 1;
+      continue;
+    }
+    expected = createHash("sha256")
+      .update(`${prev ?? ""}|${r.payload}`)
+      .digest("hex");
+    if (r.prev_hash !== prev || r.row_hash !== expected) {
+      return { ok: false, entries: rows.length, brokenAt: r.id, unchained };
+    }
+    prev = r.row_hash;
+  }
+  return { ok: true, entries: rows.length, brokenAt: null, unchained };
 }
 
 /** Idempotent. Safe to call at seed time and after an upgrade. */
 export async function ensureTables(): Promise<void> {
   const c = cfg();
+  // digest() for the chain. Neon ships pgcrypto; this is a no-op after the first run.
+  await q(`CREATE EXTENSION IF NOT EXISTS pgcrypto`);
   await q(`CREATE TABLE IF NOT EXISTS ${c.usersTable} (
     id text PRIMARY KEY, username text NOT NULL, name text NOT NULL,
     initials text NOT NULL, role text NOT NULL, scope text NOT NULL DEFAULT 'all',
@@ -98,5 +129,53 @@ export async function ensureTables(): Promise<void> {
            ON ${c.authLogTable} (at DESC)`);
   await q(`CREATE INDEX IF NOT EXISTS ${c.tablePrefix}_auth_log_username
            ON ${c.authLogTable} (username, at DESC)`);
+  await q(`ALTER TABLE ${c.authLogTable} ADD COLUMN IF NOT EXISTS prev_hash text`);
+  await q(`ALTER TABLE ${c.authLogTable} ADD COLUMN IF NOT EXISTS row_hash text`);
+
+  /* Two things make this an audit log rather than a table somebody happens not
+   * to be writing to.
+   *
+   * The chain: every row hashes the row before it, so removing or editing one
+   * breaks every hash after it. An advisory lock serialises the read of the
+   * previous hash, because two inserts racing would otherwise both chain from
+   * the same parent and the chain would fork.
+   *
+   * The refusal: update, delete and truncate raise. This stops application
+   * bugs and an administrator's slip, and it is not a claim about somebody with
+   * the database itself. Against them the chain is the control, because it
+   * makes what they did visible afterwards. */
+  await q(`CREATE OR REPLACE FUNCTION ${c.tablePrefix}_auth_log_chain()
+           RETURNS trigger AS $fn$
+           DECLARE last_hash text;
+           BEGIN
+             PERFORM pg_advisory_xact_lock(hashtext('${c.authLogTable}'));
+             SELECT row_hash INTO last_hash FROM ${c.authLogTable}
+               WHERE row_hash IS NOT NULL ORDER BY id DESC LIMIT 1;
+             NEW.prev_hash := last_hash;
+             NEW.row_hash := encode(digest(
+               coalesce(last_hash,'') || '|' ||
+               coalesce(NEW.at::text,'') || '|' || NEW.event || '|' ||
+               coalesce(NEW.username,'') || '|' || coalesce(NEW.actor,'') || '|' ||
+               coalesce(NEW.ip,'') || '|' || coalesce(NEW.user_agent,''), 'sha256'), 'hex');
+             RETURN NEW;
+           END $fn$ LANGUAGE plpgsql`);
+  await q(`CREATE OR REPLACE FUNCTION ${c.tablePrefix}_auth_log_readonly()
+           RETURNS trigger AS $fn$
+           BEGIN
+             RAISE EXCEPTION 'the auth log is append only: % is not allowed', TG_OP;
+           END $fn$ LANGUAGE plpgsql`);
+  await q(`DROP TRIGGER IF EXISTS ${c.tablePrefix}_auth_log_chain_t ON ${c.authLogTable}`);
+  await q(`CREATE TRIGGER ${c.tablePrefix}_auth_log_chain_t
+           BEFORE INSERT ON ${c.authLogTable}
+           FOR EACH ROW EXECUTE FUNCTION ${c.tablePrefix}_auth_log_chain()`);
+  await q(`DROP TRIGGER IF EXISTS ${c.tablePrefix}_auth_log_readonly_t ON ${c.authLogTable}`);
+  await q(`CREATE TRIGGER ${c.tablePrefix}_auth_log_readonly_t
+           BEFORE UPDATE OR DELETE ON ${c.authLogTable}
+           FOR EACH ROW EXECUTE FUNCTION ${c.tablePrefix}_auth_log_readonly()`);
+  await q(`DROP TRIGGER IF EXISTS ${c.tablePrefix}_auth_log_notruncate_t ON ${c.authLogTable}`);
+  await q(`CREATE TRIGGER ${c.tablePrefix}_auth_log_notruncate_t
+           BEFORE TRUNCATE ON ${c.authLogTable}
+           FOR EACH STATEMENT EXECUTE FUNCTION ${c.tablePrefix}_auth_log_readonly()`);
+
   for (const stmt of CREATE_SQL(c.tablePrefix)) await q(stmt);
 }

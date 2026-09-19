@@ -116,6 +116,31 @@ a short password with a native bubble and no message on the page, so somebody
 changes their password, is told nothing, and discovers days later that the old
 one still works. A rule nobody can see is not a rule, it is a trap.
 
+## The audit log
+
+Append only, and enforced in the database rather than by the application. An
+application that merely is not writing is not the same thing as a log that
+cannot be rewritten.
+
+- **Update, delete and truncate raise.** A trigger refuses them, which stops an
+  application bug and an administrator's slip.
+- **Every row hashes the row before it.** Removing or editing one breaks every
+  hash after it. An advisory lock serialises the read of the previous hash, so
+  two inserts racing cannot fork the chain.
+- **`verifyChain()` walks it** and says whether it is intact, where it broke,
+  and how many rows predate the chain and so cannot be verified either way. The
+  admin screen shows that line.
+
+The trigger is not a claim about somebody with the database itself. Against them
+the chain is the control: it cannot prevent tampering, it makes tampering
+visible, which is what an audit log has to do to be worth having.
+
+**Derived counts do not belong on operational screens.** An earlier version put
+"3 failed tries today" next to a person's name on the roster. A number like that
+invites a judgment in passing, next to the buttons that switch accounts off,
+with none of the context that would justify it. The events are in the log, where
+they carry their timestamps and their source addresses and can be read properly.
+
 ## Password reset by email
 
 Off by default. Turn it on with `"passwordReset": { "enabled": true }` and two

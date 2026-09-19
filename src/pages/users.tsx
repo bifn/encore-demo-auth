@@ -1,6 +1,6 @@
 import { listUsers } from "../db/users";
 import { getSession } from "../session";
-import { failuresSince, recent } from "../db/authlog";
+import { recent, verifyChain } from "../db/authlog";
 import { cfg } from "../config";
 import { can, roles } from "../permissions";
 import UserAdmin from "./user-admin";
@@ -9,7 +9,7 @@ import AuthLog from "./auth-log";
 export default async function UsersPage() {
   const session = await getSession();
   if (!session) return null;
-  const [users, log, failures] = await Promise.all([listUsers(), recent(60), failuresSince(24)]);
+  const [users, log, chain] = await Promise.all([listUsers(), recent(60), verifyChain()]);
   const c = cfg();
   const scopeLabel = c.scopes.label;
 
@@ -30,9 +30,8 @@ export default async function UsersPage() {
         roleOptions={roles()}
         wideRoles={roles().filter((r) => can(r, "scope.all"))}
         selfId={session.uid}
-        failures={failures}
       />
-      <AuthLog rows={log} />
+      <AuthLog rows={log} chain={chain} />
       <p style={{ marginTop: 22 }}><a href="/app">Back to the app</a></p>
     </main>
   );

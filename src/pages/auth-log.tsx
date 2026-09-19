@@ -20,15 +20,50 @@ const SAID: Record<string, string> = {
 
 const BAD = new Set(["login.bad_password", "login.unknown_user", "login.inactive"]);
 
-export default function AuthLog({ rows }: { rows: AuthLogRow[] }) {
+export interface ChainState {
+  ok: boolean;
+  entries: number;
+  brokenAt: number | null;
+  unchained: number;
+}
+
+export default function AuthLog({
+  rows,
+  chain,
+}: {
+  rows: AuthLogRow[];
+  chain: ChainState;
+}) {
   return (
     <section style={{ marginTop: 34 }}>
-      <h2>What has happened</h2>
+      <h2>Audit log</h2>
       <p className="muted" style={{ margin: "2px 0 12px" }}>
         Every sign-in attempt and every change to a login, newest first. Nothing here records a
-        password. It exists so a credential that stops working has an account of itself rather
-        than a shrug.
+        password. It is append only: the database refuses to update or delete a row, and each
+        entry carries the hash of the one before it, so removing or editing one breaks every
+        hash after it.
       </p>
+      <div
+        className={chain.ok ? "ok" : "err"}
+        style={{ margin: "0 0 14px" }}
+      >
+        {chain.ok ? (
+          <>
+            Chain intact across {chain.entries} {chain.entries === 1 ? "entry" : "entries"}.
+            {chain.unchained > 0 ? (
+              <>
+                {" "}
+                {chain.unchained} of them predate the chain and cannot be verified either way.
+              </>
+            ) : null}
+          </>
+        ) : (
+          <>
+            <strong>The chain is broken at entry {chain.brokenAt}.</strong> Something changed or
+            removed a row after it was written. Treat everything from that point on as unproven.
+          </>
+        )}
+      </div>
       {rows.length === 0 ? (
         <p className="muted">Nothing recorded yet.</p>
       ) : (
